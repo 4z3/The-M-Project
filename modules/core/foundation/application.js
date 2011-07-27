@@ -128,13 +128,42 @@ M.Application = M.Object.extend(
         M.ViewManager.setCurrentPage(entryPage);
 
         /* now lets render all other pages */
-        _.each(M.ViewManager.pageList, function(page) {
-            page.render();
-        });
+        // This is the super-slow-page-renderer way for T-Mobile's Torch.
 
-        /* finally add entry page back to pagelist and view list, but with new key 'm_entryPage' */
-        M.ViewManager.viewList['m_entryPage'] = entryPage;
-        M.ViewManager.pageList['m_entryPage'] = entryPage;
+        function forEachPageDo (method, finalFun) {
+          // generate function array to run super-slowly
+          var funs = Object.keys(M.ViewManager.pageList).map(function (id) {
+            var page = M.ViewManager.pageList[id];
+            return function () {
+              return page[method]();
+            };
+          });
+          (function rec (i) {
+            setTimeout(function () {
+              if (i < funs.length) {
+                funs[i]();
+                rec(i + 1);
+              } else {
+                finalFun();
+              }; 
+            }, 0);
+          })(0);
+        };
+
+        forEachPageDo('render', function () {
+          init_jquery_mobile();
+
+          /* finally add entry page back to pagelist and view list,
+           * but with new key 'm_entrypage' */
+          M.ViewManager.viewList['m_entryPage'] = entryPage;
+          M.ViewManager.pageList['m_entryPage'] = entryPage;
+
+          forEachPageDo('theme', function () {
+            forEachPageDo('registerEvents', function () {
+              on_T_Mobile_s_Torch_Hack_done();
+            });
+          });
+        });
     },
 
     /**

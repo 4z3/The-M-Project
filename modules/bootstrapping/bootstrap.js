@@ -18,3 +18,7 @@ $(document).bind("mobileinit", function(){
 $(document).ready(function(){
     /* do something on dom ready */
 });
+
+function on_T_Mobile_s_Torch_Hack_done() {
+  alert('on_T_Mobile_s_Torch_Hack_done() called');
+};
